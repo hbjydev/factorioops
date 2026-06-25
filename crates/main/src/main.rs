@@ -3,15 +3,15 @@ use factorioops_core::result::error::FactorioopsError;
 use opentelemetry::global;
 use opentelemetry::logs::LoggerProvider;
 use opentelemetry::metrics::MeterProvider;
+use opentelemetry::trace::TracerProvider as _;
 use opentelemetry_appender_tracing::layer::OpenTelemetryTracingBridge;
 use opentelemetry_sdk::Resource;
 use opentelemetry_sdk::logs::SdkLoggerProvider;
 use opentelemetry_sdk::metrics::SdkMeterProvider;
 use opentelemetry_sdk::propagation::TraceContextPropagator;
 use opentelemetry_sdk::trace::SdkTracerProvider;
-use opentelemetry::trace::{TracerProvider as _};
-use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::Registry;
+use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 
 #[tokio::main]
@@ -44,9 +44,7 @@ async fn main() {
 }
 
 fn init_otel() -> Result<(SdkTracerProvider, SdkMeterProvider, SdkLoggerProvider)> {
-    let rs = Resource::builder()
-        .with_service_name("factorioops")
-        .build();
+    let rs = Resource::builder().with_service_name("factorioops").build();
 
     let te = opentelemetry_otlp::SpanExporter::builder()
         .with_tonic()
@@ -99,11 +97,7 @@ fn init_otel() -> Result<(SdkTracerProvider, SdkMeterProvider, SdkLoggerProvider
         .with_level(true)
         .with_ansi(true);
 
-    Registry::default()
-        .with(tl)
-        .with(ll)
-        .with(fmt)
-        .init();
+    Registry::default().with(tl).with(ll).with(fmt).init();
 
     Ok((tp, mp, lp))
 }
