@@ -1,6 +1,9 @@
 [settings]
 experimental = true
 
+[env]
+_.file = "{{cwd}}/.env"
+
 [tools]
 rust = { version = "1.96.0", components = "rustfmt,clippy,llvm-tools-preview" }
 "aqua:nextest-rs/nextest/cargo-nextest" = "0.9.138"

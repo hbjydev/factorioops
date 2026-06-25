@@ -6,3 +6,25 @@ members = ["crates/api","crates/core","crates/db", "crates/main", "crates/models
 edition = "2024"
 rust-version = "1.96"
 license = "Apache-2.0"
+
+[workspace.dependencies]
+anyhow = "1.0"
+thiserror = "2.0"
+
+tokio = { version = "1.52", features = ["full"] }
+
+tracing = "0.1"
+tracing-subscriber = "0.3"
+
+opentelemetry = "0.32"
+opentelemetry_sdk = "0.32"
+opentelemetry-otlp = { version = "0.32", features = ["grpc-tonic"] }
+tracing-opentelemetry = "0.33"
+opentelemetry-appender-tracing = "0.32"
+
+# Monorepo
+factorioops-api = { path = "crates/api" }
+factorioops-core = { path = "crates/core" }
+factorioops-db = { path = "crates/db" }
+factorioops-models = { path = "crates/models" }
+factorioops-worker = { path = "crates/worker" }
