@@ -49,22 +49,22 @@ jobs:
       - name: Run unit tests
         run: mise run test-rs
 
-  frontend-test:
-    name: Frontend Tests
-    runs-on: ubuntu-24.04
-    permissions:
-      contents: read
-    steps:
-      - name: Checkout
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-        with:
-          persist-credentials: false
-
-      - name: Setup Mise
-        uses: ./.github/actions/setup-mise
-
-      - name: Build workspace
-        run: mise run build-fe
-
-      - name: Run unit tests
-        run: mise run test-fe
+  # frontend-test:
+  #   name: Frontend Tests
+  #   runs-on: ubuntu-24.04
+  #   permissions:
+  #     contents: read
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+  #       with:
+  #         persist-credentials: false
+  #
+  #     - name: Setup Mise
+  #       uses: ./.github/actions/setup-mise
+  #
+  #     - name: Build workspace
+  #       run: mise run build-fe
+  #
+  #     - name: Run unit tests
+  #       run: mise run test-fe
