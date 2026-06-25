@@ -1,0 +1,8 @@
+[workspace]
+resolver = "3"
+members = ["crates/api","crates/core","crates/db", "crates/main", "crates/models", "crates/worker"]
+
+[workspace.package]
+edition = "2024"
+rust-version = "1.96"
+license = "Apache-2.0"

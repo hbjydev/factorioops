@@ -1,0 +1,99 @@
+[settings]
+experimental = true
+
+[tools]
+rust = { version = "1.96.0", components = "rustfmt,clippy,llvm-tools-preview" }
+"aqua:nextest-rs/nextest/cargo-nextest" = "0.9.138"
+node = "26.3.1"
+pnpm = "11.9.0"
+oxfmt = "0.56.0"
+oxlint = "1.71.0"
+"aqua:EmbarkStudios/cargo-deny" = "0.19.9"
+
+[tasks.build]
+description = "Builds the project in debug mode"
+depends = ["build-rs", "build-fe"]
+
+[tasks.build-rs]
+run = "cargo build --workspace --locked"
+hide = true
+
+[tasks.build-fe]
+run = "pnpm run build"
+dir = "{{cwd}}/frontend"
+hide = true
+
+[tasks.build-release]
+description = "Builds the project in release mode"
+depends = ["build-release-rs", "build-fe"]
+
+[tasks.build-release-rs]
+run = "cargo build --release --workspace --locked"
+hide = true
+
+[tasks.lint]
+description = "Runs linter on the project"
+depends = ["lint-rs", "lint-fe"]
+
+[tasks.lint-rs]
+description = "Runs clippy on the project"
+run = "cargo clippy --workspace --all-targets -- -D warnings"
+
+[tasks.lint-fe]
+description = "Runs oxlint on the frontend"
+run = "oxlint"
+
+[tasks.fmt]
+description = "Format the workspace in place"
+depends = ["fmt-rs", "fmt-fe"]
+
+[tasks.fmt-rs]
+description = "Formats the Rust code in place"
+run = "cargo fmt --all"
+
+[tasks.fmt-check-rs]
+description = "Checks if the Rust code is formatted correctly"
+run = "cargo fmt --all -- --check"
+
+[tasks.fmt-fe]
+description = "Formats the frontend code in place"
+run = "oxfmt"
+dir = "{{cwd}}/frontend"
+
+[tasks.fmt-check-fe]
+description = "Checks if the frontend code is formatted correctly"
+run = "oxfmt --check"
+dir = "{{cwd}}/frontend"
+
+[tasks.test]
+description = "Runs the test suite"
+depends = ["test-rs", "test-fe"]
+
+[tasks.test-rs]
+description = "Runs the test suite"
+run = "cargo nextest run --workspace --locked"
+
+[tasks.test-fe]
+description = "Runs the frontend test suite"
+run = "pnpm run test"
+dir = "{{cwd}}/frontend"
+
+[tasks.cov]
+description = "Coverage over the hermetic suite -> lcov.info (report-only; no threshold)"
+run = "cargo llvm-cov --workspace --locked --lcov --output-path lcov.info"
+
+[tasks.cov-html]
+description = "Coverage as a browsable HTML report under target/llvm-cov/html"
+run = "cargo llvm-cov --workspace --locked --html"
+
+[tasks.cov-summary]
+description = "Coverage summary printed to the terminal"
+run = "cargo llvm-cov --workspace --locked --summary-only"
+
+[tasks.audit]
+description = "Supply-chain + license audit"
+run = "cargo deny check"
+
+[tasks.ci]
+description = "The full local hermetic gate: format, lint, build, test, and drift check"
+depends = ["fmt-check-rs", "fmt-check-fe", "lint-rs", "lint-fe", "build-rs", "build-fe", "test-rs", "test-fe"]
