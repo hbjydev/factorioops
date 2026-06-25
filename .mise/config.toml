@@ -94,6 +94,11 @@ run = "cargo llvm-cov --workspace --locked --summary-only"
 description = "Supply-chain + license audit"
 run = "cargo deny check"
 
+[tasks.install-fe]
+description = "Supply-chain + license audit"
+run = "pnpm install --frozen-lockfile"
+dir = "{{cwd}}/frontend"
+
 [tasks.ci]
 description = "The full local hermetic gate: format, lint, build, test, and drift check"
 depends = ["fmt-check-rs", "fmt-check-fe", "lint-rs", "lint-fe", "build-rs", "build-fe", "test-rs", "test-fe"]
