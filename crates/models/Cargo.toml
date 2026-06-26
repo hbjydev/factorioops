@@ -5,4 +5,16 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 
+[features]
+default = []
+bson = ["dep:bson", "dep:serde"]
+
 [dependencies]
+anyhow.workspace = true
+
+ulid.workspace = true
+chrono.workspace = true
+tracing.workspace = true
+
+serde = { workspace = true, optional = true }
+bson = { workspace = true, optional = true }

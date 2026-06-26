@@ -1,3 +1,6 @@
+use std::net::SocketAddr;
+
+use clap::Parser;
 use factorioops_core::result::Result;
 use factorioops_core::result::error::FactorioopsError;
 use opentelemetry::global;
@@ -10,15 +13,63 @@ use opentelemetry_sdk::logs::SdkLoggerProvider;
 use opentelemetry_sdk::metrics::SdkMeterProvider;
 use opentelemetry_sdk::propagation::TraceContextPropagator;
 use opentelemetry_sdk::trace::SdkTracerProvider;
-use tracing_subscriber::Registry;
+use tracing_subscriber::filter::Targets;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
+use tracing_subscriber::{Layer, Registry};
+
+#[derive(clap::Parser)]
+struct Args {
+    #[clap(subcommand)]
+    command: Command,
+}
+
+#[derive(clap::Subcommand, PartialEq)]
+enum Command {
+    Api {
+        #[clap(
+            long,
+            env = "FACTORIOOPS_API_BIND_ADDR",
+            default_value = "0.0.0.0:4123"
+        )]
+        bind_addr: SocketAddr,
+    },
+    DumpApi,
+}
 
 #[tokio::main]
 async fn main() {
+    let args = Args::parse();
+
+    if args.command == Command::DumpApi {
+        let (_router, api) = factorioops_api::router().expect("Failed to initialize API router");
+        let json = api
+            .to_json()
+            .expect("Failed to serialize OpenAPI spec to JSON");
+        println!("{}", json);
+        return;
+    }
+
     let (tp, mp, lp) = init_otel().expect("Failed to initialize OpenTelemetry and/or Tracing");
 
-    tracing::info!("Hello, world!");
+    match args.command {
+        Command::Api { bind_addr } => {
+            tracing::info!("Starting API server on {}", bind_addr);
+            let (router, _api) =
+                factorioops_api::router().expect("Failed to initialize API router");
+
+            let listener = tokio::net::TcpListener::bind(bind_addr)
+                .await
+                .expect("Failed to bind to address");
+
+            factorioops_api::serve(listener, router)
+                .await
+                .expect("Failed to start API server");
+        }
+
+        // unreachable because we already handled DumpApi above
+        Command::DumpApi => unreachable!(),
+    }
 
     let mut shutdown_errors = Vec::new();
 
@@ -92,10 +143,18 @@ fn init_otel() -> Result<(SdkTracerProvider, SdkMeterProvider, SdkLoggerProvider
 
     let ll = OpenTelemetryTracingBridge::builder(&lp).build();
 
+    let filter = Targets::new()
+        .with_target("factorioops", tracing::Level::INFO)
+        .with_target("factorioops_api", tracing::Level::INFO)
+        .with_target("factorioops_core", tracing::Level::INFO)
+        .with_target("factorioops_db", tracing::Level::INFO)
+        .with_target("factorioops_models", tracing::Level::INFO);
+
     let fmt = tracing_subscriber::fmt::layer()
         .with_target(true)
         .with_level(true)
-        .with_ansi(true);
+        .with_ansi(true)
+        .with_filter(filter);
 
     Registry::default().with(tl).with(ll).with(fmt).init();
 

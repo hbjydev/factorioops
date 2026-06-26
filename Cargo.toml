@@ -11,6 +11,20 @@ license = "Apache-2.0"
 anyhow = "1.0"
 thiserror = "2.0"
 
+serde = { version = "1.0", features = ["derive"] }
+ulid = { version = "1.2", features = ["serde", "uuid"] }
+
+clap = { version = "4.6", features = ["derive", "env"] }
+
+axum = { version = "0.8", features = ["macros"] }
+utoipa = { version = "5.5", features = ["axum_extras", "yaml", "preserve_order"] }
+utoipa-axum = "0.2"
+utoipa-scalar = { version = "0.3", features = ["axum"] }
+
+mongodb = { version = "3.7", features = ["zstd-compression", "tracing-unstable", "bson-3"] }
+bson = { version = "3.1", features = ["serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+
 tokio = { version = "1.52", features = ["full"] }
 
 tracing = "0.1"
