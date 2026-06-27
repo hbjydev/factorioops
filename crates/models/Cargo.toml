@@ -11,6 +11,7 @@ bson = ["dep:bson", "dep:serde"]
 
 [dependencies]
 anyhow.workspace = true
+async-trait.workspace = true
 
 ulid.workspace = true
 chrono.workspace = true
@@ -18,3 +19,5 @@ tracing.workspace = true
 
 serde = { workspace = true, optional = true }
 bson = { workspace = true, optional = true }
+
+factorioops-core.workspace = true

@@ -1,4 +1,5 @@
 use std::net::SocketAddr;
+use std::sync::Arc;
 
 use clap::Parser;
 use factorioops_core::result::Result;
@@ -22,6 +23,13 @@ use tracing_subscriber::{Layer, Registry};
 struct Args {
     #[clap(subcommand)]
     command: Command,
+
+    #[clap(
+        long,
+        env = "FACTORIOOPS_DATABASE_URL",
+        default_value = "mongodb://127.0.0.1:27017/factorioops"
+    )]
+    database_url: String,
 }
 
 #[derive(clap::Subcommand, PartialEq)]
@@ -62,7 +70,15 @@ async fn main() {
                 .await
                 .expect("Failed to bind to address");
 
-            factorioops_api::serve(listener, router)
+            let state = factorioops_api::AppState::new(
+                Arc::new(
+                    factorioops_db::MongoStore::open(args.database_url)
+                        .await
+                        .expect("Failed to connect to database"),
+                ),
+            );
+
+            factorioops_api::serve(listener, router.with_state(state))
                 .await
                 .expect("Failed to start API server");
         }

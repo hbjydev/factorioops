@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use utoipa::OpenApi;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_scalar::{Scalar, Servable};
@@ -29,7 +31,7 @@ pub(crate) const BOOK_TAG: &str = "book";
 )]
 struct ApiDoc;
 
-pub fn router() -> Result<(axum::Router<()>, utoipa::openapi::OpenApi), Box<dyn std::error::Error>>
+pub fn router() -> Result<(axum::Router<AppState>, utoipa::openapi::OpenApi), Box<dyn std::error::Error>>
 {
     let (router, api) = OpenApiRouter::with_openapi(ApiDoc::openapi())
         .nest("/v1/auth", routes::auth::router())
@@ -38,4 +40,15 @@ pub fn router() -> Result<(axum::Router<()>, utoipa::openapi::OpenApi), Box<dyn 
     let router = router.merge(Scalar::with_url("/docs", api.clone()));
 
     Ok((router, api))
+}
+
+#[derive(Clone)]
+pub struct AppState {
+    pub db: Arc<dyn factorioops_models::Storage>,
+}
+
+impl AppState {
+    pub fn new(db: Arc<dyn factorioops_models::Storage>) -> Self {
+        Self { db }
+    }
 }

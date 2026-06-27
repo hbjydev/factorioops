@@ -20,3 +20,4 @@ opentelemetry-appender-tracing.workspace = true
 
 factorioops-api.workspace = true
 factorioops-core.workspace = true
+factorioops-db.workspace = true

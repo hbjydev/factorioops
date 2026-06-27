@@ -1,9 +1,15 @@
+use axum::extract::State;
+use factorioops_models::user::UserStore;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 use utoipa_axum::{router::OpenApiRouter, routes};
 
-pub fn router() -> OpenApiRouter {
-    OpenApiRouter::new().routes(routes!(login))
+use crate::AppState;
+
+pub fn router() -> OpenApiRouter<AppState> {
+    OpenApiRouter::new().routes(
+        routes!(login)
+    )
 }
 
 #[derive(Deserialize, ToSchema)]
@@ -39,10 +45,16 @@ pub struct AuthLoginResponse {
     tag = crate::AUTH_TAG,
 )]
 pub async fn login(
+    State(state): State<crate::AppState>,
     req: axum::Json<AuthLoginRequest>,
 ) -> Result<axum::Json<AuthLoginResponse>, axum::http::StatusCode> {
+    let user = state.db.get_user_by_username(req.username.clone()).await
+        .map_err(|_| axum::http::StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    println!("User: {:?}", user);
+
     // Here you would normally validate the username and password against your database
-    if req.username == "admin" && req.password == "password" {
+    if req.password == "password" {
         let response = AuthLoginResponse {
             access_token: "fake-jwt-token".to_string(),
             expires_in: 3600,
