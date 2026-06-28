@@ -1,27 +1,63 @@
+use std::str::FromStr;
+
 use async_trait::async_trait;
 use chrono::DateTime;
-use factorioops_core::result::Result;
+use factorioops_auth::passwords::{Hasher, Password};
+use factorioops_core::result::{Result, error::FactorioopsError};
+use newtype_derive::{NewtypeDeref, NewtypeFrom};
+use parse_display::Display;
+use serde_with::{DeserializeFromStr, SerializeDisplay};
 use ulid::Ulid;
 
 use crate::PaginationOptions;
+
+#[derive(Clone, Debug, Display, Eq, PartialEq, SerializeDisplay, DeserializeFromStr)]
+#[repr(transparent)]
+#[display("{0}")]
+pub struct PasswordHashString(pub factorioops_auth::passwords::PasswordHashString);
+
+impl FromStr for PasswordHashString {
+    type Err = factorioops_auth::passwords::PasswordVerifyError;
+
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        let password_hash = factorioops_auth::passwords::PasswordHashString::from_str(s)?;
+        Ok(PasswordHashString(password_hash))
+    }
+}
+
+NewtypeFrom! {
+    () pub struct PasswordHashString(pub factorioops_auth::passwords::PasswordHashString);
+}
+NewtypeDeref! {
+    () pub struct PasswordHashString(pub factorioops_auth::passwords::PasswordHashString);
+}
 
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "bson", derive(serde::Serialize, serde::Deserialize))]
 pub struct DbUser {
     pub id: Ulid,
     pub username: String,
-    pub password_hash: String,
+    pub password_hash: PasswordHashString,
     pub email: String,
 }
 
 impl DbUser {
-    pub fn new(username: String, password_hash: String, email: String) -> Self {
+    pub fn new(username: String, password_hash: PasswordHashString, email: String) -> Self {
         Self {
             id: Ulid::new(),
             username,
             password_hash,
             email,
         }
+    }
+
+    pub fn create(username: String, password: Password, email: String) -> Result<Self> {
+        let mut hasher = Hasher::default();
+        let hashed_password = hasher.create_password(&password).map_err(|e| {
+            FactorioopsError::SecurityError(format!("Failed to hash password: {}", e))
+        })?;
+
+        Ok(Self::new(username, hashed_password.into(), email))
     }
 
     pub fn created_at(&self) -> chrono::DateTime<chrono::Utc> {
@@ -33,6 +69,7 @@ impl DbUser {
     }
 }
 
+#[derive(Debug)]
 pub struct UserFilter {
     pub id: Option<Vec<Ulid>>,
     pub username: Option<Vec<String>>,
@@ -119,14 +156,13 @@ mod tests {
             .expect("Failed to parse expected date")
             .with_timezone(&chrono::Utc);
 
-        let id = Ulid::from_datetime(expected_date.into());
-
-        let user = DbUser {
-            id,
-            username: "testuser".to_string(),
-            password_hash: "hashedpassword".to_string(),
-            email: "testuser@example.com".to_string(),
-        };
+        let mut user = DbUser::create(
+            "testuser".to_string(),
+            Password::new("p4ssw0rd!!").unwrap(),
+            "testuser@example.com".to_string(),
+        )
+        .unwrap();
+        user.id = Ulid::from_datetime(expected_date.into());
 
         let date = user.created_at();
         assert_eq!(date, expected_date);

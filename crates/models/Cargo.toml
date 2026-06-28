@@ -16,8 +16,12 @@ async-trait.workspace = true
 ulid.workspace = true
 chrono.workspace = true
 tracing.workspace = true
+newtype_derive.workspace = true
+parse-display.workspace = true
 
 serde = { workspace = true, optional = true }
+serde_with.workspace = true
 bson = { workspace = true, optional = true }
 
+factorioops-auth = { workspace = true, features = ["passwords"] }
 factorioops-core.workspace = true

@@ -13,5 +13,12 @@ utoipa.workspace = true
 utoipa-axum.workspace = true
 utoipa-scalar.workspace = true
 
+tracing.workspace = true
+axum-otel.workspace = true
+tower-http.workspace = true
+tower.workspace = true
+tower-otel.workspace = true
+opentelemetry.workspace = true
+
 factorioops-auth = { workspace = true, features = ["passwords"] }
 factorioops-models.workspace = true

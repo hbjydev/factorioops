@@ -28,6 +28,8 @@ serde_with = { version = "3.14", default-features = false, features = ["alloc", 
 ulid = { version = "1.2", features = ["serde", "uuid"] }
 secrecy = { version = "0.10", features = ["serde"] }
 rand = "0.9"
+newtype_derive = "0.1"
+parse-display = "0.11"
 
 clap = { version = "4.6", features = ["derive", "env"] }
 
@@ -35,8 +37,12 @@ axum = { version = "0.8", features = ["macros"] }
 utoipa = { version = "5.5", features = ["axum_extras", "yaml", "preserve_order"] }
 utoipa-axum = "0.2"
 utoipa-scalar = { version = "0.3", features = ["axum"] }
+axum-otel = "0.32"
+tower-http = { version = "0.6", features = ["request-id", "trace"] }
+tower-otel = { version = "0.10", features = ["axum"] }
+tower = { version = "0.5", default-features = false }
 
-mongodb = { version = "3.7", features = ["zstd-compression", "tracing-unstable", "bson-3"] }
+mongodb = { version = "3.7", features = ["zstd-compression", "tracing-unstable", "opentelemetry", "bson-3"] }
 bson = { version = "3.1", features = ["serde"] }
 chrono = { version = "0.4", features = ["serde"] }
 

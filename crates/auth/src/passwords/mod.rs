@@ -15,6 +15,7 @@ use serde_with::SerializeDisplay;
 use std::fmt;
 use std::str::FromStr;
 use thiserror::Error;
+use tracing::Level;
 
 const ARGON2_ALGORITHM: argon2::Algorithm = argon2::Algorithm::Argon2id;
 pub const ARGON2_COST_M_KIB: u32 = 96 * 1024;
@@ -36,6 +37,7 @@ pub fn external_password_argon() -> Argon2<'static> {
 pub struct Password(secrecy::SecretString);
 
 impl Password {
+    #[tracing::instrument(level = Level::DEBUG, skip(password), name = "Password::new")]
     pub fn new(password: &str) -> Result<Password, PasswordTooLongError> {
         if password.len() > MAX_PASSWORD_LENGTH {
             Err(PasswordTooLongError)
@@ -115,6 +117,7 @@ impl<R: CryptoRng + RngCore> Hasher<R> {
         Hasher { argon2, rng }
     }
 
+    #[tracing::instrument(level = Level::INFO, skip(self, password))]
     pub fn create_password(
         &mut self,
         password: &Password,
@@ -127,6 +130,7 @@ impl<R: CryptoRng + RngCore> Hasher<R> {
             .serialize())
     }
 
+    #[tracing::instrument(level = Level::INFO, skip(self, password, hashed))]
     pub fn verify_password(
         &self,
         password: &Password,
@@ -144,6 +148,7 @@ impl<R: CryptoRng + RngCore> Hasher<R> {
     }
 }
 
+#[tracing::instrument(level = Level::DEBUG, skip(rng))]
 fn generate_salt_string<R>(rng: &mut R) -> SaltString
 where
     R: RngCore + CryptoRng,
@@ -158,12 +163,14 @@ where
 /// Parses the given PHC-format password hash string and returns it only if it
 /// meets some basic requirements (which match the way we generate password
 /// hashes).
+#[tracing::instrument(level = Level::DEBUG, skip(s))]
 fn parse_phc_hash(s: &str) -> Result<PasswordHashString, String> {
     let hash = PasswordHashString::new(s).map_err(|e| format!("password hash: {}", e))?;
     verify_strength(&hash)?;
     Ok(hash)
 }
 
+#[tracing::instrument(level = Level::DEBUG, skip(hash))]
 fn verify_strength(hash: &PasswordHashString) -> Result<(), String> {
     if hash.algorithm() != ARGON2_ALGORITHM.ident() {
         return Err(format!(

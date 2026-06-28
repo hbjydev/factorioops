@@ -26,6 +26,7 @@ struct Args {
 
     #[clap(
         long,
+        global = true,
         env = "FACTORIOOPS_DATABASE_URL",
         default_value = "mongodb://127.0.0.1:27017/factorioops"
     )]
@@ -155,14 +156,18 @@ fn init_otel() -> Result<(SdkTracerProvider, SdkMeterProvider, SdkLoggerProvider
         .with_tracer(tracer)
         .with_error_events_to_status(true);
 
-    let ll = OpenTelemetryTracingBridge::builder(&lp).build();
-
     let filter = Targets::new()
+        .with_default(tracing::Level::WARN)
         .with_target("factorioops", tracing::Level::INFO)
         .with_target("factorioops_api", tracing::Level::INFO)
+        .with_target("factorioops_auth", tracing::Level::INFO)
         .with_target("factorioops_core", tracing::Level::INFO)
         .with_target("factorioops_db", tracing::Level::INFO)
         .with_target("factorioops_models", tracing::Level::INFO);
+
+    let ll = OpenTelemetryTracingBridge::builder(&lp)
+        .build()
+        .with_filter(filter.clone());
 
     let fmt = tracing_subscriber::fmt::layer()
         .with_target(true)

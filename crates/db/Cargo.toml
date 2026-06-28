@@ -11,5 +11,7 @@ ulid.workspace = true
 async-trait.workspace = true
 mongodb.workspace = true
 futures.workspace = true
+tracing.workspace = true
+
 factorioops-models = { workspace = true, features = ["bson"] }
 factorioops-core.workspace = true

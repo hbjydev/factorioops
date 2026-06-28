@@ -9,6 +9,7 @@ use crate::MongoStore;
 
 #[async_trait]
 impl UserStore for MongoStore {
+    #[tracing::instrument(skip(self))]
     async fn list_users(
         &self,
         filters: Option<Vec<factorioops_models::user::UserFilter>>,
@@ -52,6 +53,7 @@ impl UserStore for MongoStore {
         Ok(users)
     }
 
+    #[tracing::instrument(skip(self))]
     async fn create_user(&self, user: factorioops_models::user::DbUser) -> Result<()> {
         self.user_store
             .insert_one(user)
@@ -61,6 +63,7 @@ impl UserStore for MongoStore {
         Ok(())
     }
 
+    #[tracing::instrument(skip(self))]
     async fn update_user(&self, user: factorioops_models::user::DbUser) -> Result<()> {
         if user.id.is_nil() {
             return Err(FactorioopsError::Other(anyhow!(
@@ -76,6 +79,7 @@ impl UserStore for MongoStore {
         Ok(())
     }
 
+    #[tracing::instrument(skip(self))]
     async fn delete_user(&self, id: Ulid) -> Result<()> {
         if id.is_nil() {
             return Err(FactorioopsError::Other(anyhow!(

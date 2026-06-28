@@ -1,5 +1,13 @@
 use std::sync::Arc;
 
+use axum_otel::{AxumOtelOnFailure, AxumOtelOnResponse, AxumOtelSpanCreator};
+use tower::ServiceBuilder;
+use tower_http::{
+    request_id::{MakeRequestUuid, PropagateRequestIdLayer, SetRequestIdLayer},
+    trace::TraceLayer,
+};
+use tower_otel::metrics;
+use tracing::Level;
 use utoipa::OpenApi;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_scalar::{Scalar, Servable};
@@ -37,7 +45,20 @@ pub fn router()
         .nest("/v1/auth", routes::auth::router())
         .split_for_parts();
 
-    let router = router.merge(Scalar::with_url("/docs", api.clone()));
+    let meter = opentelemetry::global::meter(env!("CARGO_PKG_NAME"));
+
+    let router = router.merge(Scalar::with_url("/docs", api.clone())).layer(
+        ServiceBuilder::new()
+            .layer(SetRequestIdLayer::x_request_id(MakeRequestUuid))
+            .layer(metrics::HttpLayer::server(&meter))
+            .layer(
+                TraceLayer::new_for_http()
+                    .make_span_with(AxumOtelSpanCreator::new().level(Level::INFO))
+                    .on_response(AxumOtelOnResponse::new().level(Level::INFO))
+                    .on_failure(AxumOtelOnFailure::new().level(Level::ERROR)),
+            )
+            .layer(PropagateRequestIdLayer::x_request_id()),
+    );
 
     Ok((router, api))
 }
