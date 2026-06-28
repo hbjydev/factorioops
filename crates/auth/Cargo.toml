@@ -1,0 +1,27 @@
+[package]
+name = "factorioops-auth"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[features]
+default = []
+passwords = ["dep:argon2", "dep:rand", "dep:secrecy"]
+
+[dependencies]
+argon2 = { version = "0.5", optional = true, features = [
+    "alloc",
+    "password-hash",
+    "rand",
+    "std",
+] }
+secrecy = { workspace = true, optional = true }
+thiserror.workspace = true
+serde.workspace = true
+serde_with.workspace = true
+rand = { workspace = true, optional = true }
+
+[dev-dependencies]
+# For tests
+argon2alt = { package = "rust-argon2", version = "2.1.0" }

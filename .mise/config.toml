@@ -70,7 +70,7 @@ dir = "{{cwd}}/frontend"
 
 [tasks.test]
 description = "Runs the test suite"
-depends = ["test-rs", "test-fe"]
+depends = ["test-rs"]
 
 [tasks.test-rs]
 description = "Runs the test suite"

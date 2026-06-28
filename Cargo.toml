@@ -1,11 +1,21 @@
 [workspace]
 resolver = "3"
-members = ["crates/api","crates/core","crates/db", "crates/main", "crates/models", "crates/worker"]
+members = ["crates/api", "crates/auth","crates/core","crates/db", "crates/main", "crates/models", "crates/worker"]
 
 [workspace.package]
 edition = "2024"
 rust-version = "1.96"
 license = "Apache-2.0"
+
+# Password hashing is expensive by construction.  Build the hashing libraries
+# with optimizations to significantly speed up tests.
+[profile.dev.package.argon2]
+opt-level = 3
+[profile.dev.package.rust-argon2]
+opt-level = 3
+
+[profile.release]
+panic = "abort"
 
 [workspace.dependencies]
 anyhow = "1.0"
@@ -14,7 +24,10 @@ thiserror = "2.0"
 async-trait = "0.1"
 
 serde = { version = "1.0", features = ["derive"] }
+serde_with = { version = "3.14", default-features = false, features = ["alloc", "macros"] }
 ulid = { version = "1.2", features = ["serde", "uuid"] }
+secrecy = { version = "0.10", features = ["serde"] }
+rand = "0.9"
 
 clap = { version = "4.6", features = ["derive", "env"] }
 
@@ -41,6 +54,7 @@ opentelemetry-appender-tracing = "0.32"
 
 # Monorepo
 factorioops-api = { path = "crates/api" }
+factorioops-auth = { path = "crates/auth" }
 factorioops-core = { path = "crates/core" }
 factorioops-db = { path = "crates/db" }
 factorioops-models = { path = "crates/models" }

@@ -12,4 +12,6 @@ axum.workspace = true
 utoipa.workspace = true
 utoipa-axum.workspace = true
 utoipa-scalar.workspace = true
+
+factorioops-auth = { workspace = true, features = ["passwords"] }
 factorioops-models.workspace = true
