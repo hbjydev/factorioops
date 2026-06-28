@@ -70,13 +70,11 @@ async fn main() {
                 .await
                 .expect("Failed to bind to address");
 
-            let state = factorioops_api::AppState::new(
-                Arc::new(
-                    factorioops_db::MongoStore::open(args.database_url)
-                        .await
-                        .expect("Failed to connect to database"),
-                ),
-            );
+            let state = factorioops_api::AppState::new(Arc::new(
+                factorioops_db::MongoStore::open(args.database_url)
+                    .await
+                    .expect("Failed to connect to database"),
+            ));
 
             factorioops_api::serve(listener, router.with_state(state))
                 .await

@@ -31,8 +31,8 @@ pub(crate) const BOOK_TAG: &str = "book";
 )]
 struct ApiDoc;
 
-pub fn router() -> Result<(axum::Router<AppState>, utoipa::openapi::OpenApi), Box<dyn std::error::Error>>
-{
+pub fn router()
+-> Result<(axum::Router<AppState>, utoipa::openapi::OpenApi), Box<dyn std::error::Error>> {
     let (router, api) = OpenApiRouter::with_openapi(ApiDoc::openapi())
         .nest("/v1/auth", routes::auth::router())
         .split_for_parts();

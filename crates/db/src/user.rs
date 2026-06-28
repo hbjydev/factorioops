@@ -2,8 +2,8 @@ use anyhow::anyhow;
 use async_trait::async_trait;
 use factorioops_core::result::{Result, error::FactorioopsError};
 use factorioops_models::user::{DbUser, UserStore};
-use ulid::Ulid;
 use futures::stream::TryStreamExt;
+use ulid::Ulid;
 
 use crate::MongoStore;
 
@@ -19,7 +19,8 @@ impl UserStore for MongoStore {
         if let Some(filters) = filters {
             for filter in filters {
                 if let Some(ids) = filter.id {
-                    let id_strings: Vec<String> = ids.into_iter().map(|id| id.to_string()).collect();
+                    let id_strings: Vec<String> =
+                        ids.into_iter().map(|id| id.to_string()).collect();
                     query.insert("id", mongodb::bson::doc! { "$in": id_strings });
                 }
                 if let Some(usernames) = filter.username {
@@ -51,10 +52,7 @@ impl UserStore for MongoStore {
         Ok(users)
     }
 
-    async fn create_user(
-        &self,
-        user: factorioops_models::user::DbUser,
-    ) -> Result<()> {
+    async fn create_user(&self, user: factorioops_models::user::DbUser) -> Result<()> {
         self.user_store
             .insert_one(user)
             .await
@@ -63,19 +61,15 @@ impl UserStore for MongoStore {
         Ok(())
     }
 
-    async fn update_user(
-        &self,
-        user: factorioops_models::user::DbUser,
-    ) -> Result<()> {
+    async fn update_user(&self, user: factorioops_models::user::DbUser) -> Result<()> {
         if user.id.is_nil() {
-            return Err(FactorioopsError::Other(anyhow!("User ID is required for update")));
+            return Err(FactorioopsError::Other(anyhow!(
+                "User ID is required for update"
+            )));
         }
 
         self.user_store
-            .replace_one(
-                mongodb::bson::doc! { "id": user.id.to_string() },
-                user,
-            )
+            .replace_one(mongodb::bson::doc! { "id": user.id.to_string() }, user)
             .await
             .map_err(|e| FactorioopsError::Other(e.into()))?;
 
@@ -84,7 +78,9 @@ impl UserStore for MongoStore {
 
     async fn delete_user(&self, id: Ulid) -> Result<()> {
         if id.is_nil() {
-            return Err(FactorioopsError::Other(anyhow!("User ID is required for deletion")));
+            return Err(FactorioopsError::Other(anyhow!(
+                "User ID is required for deletion"
+            )));
         }
 
         self.user_store

@@ -13,16 +13,6 @@ impl Default for PaginationOptions {
     }
 }
 
-pub trait Storage:
-    Send
-    + Sync
-    + 'static
-    + user::UserStore
-{}
+pub trait Storage: Send + Sync + 'static + user::UserStore {}
 
-impl<T> Storage for T where T:
-    Send
-    + Sync
-    + 'static
-    + user::UserStore
-{}
+impl<T> Storage for T where T: Send + Sync + 'static + user::UserStore {}

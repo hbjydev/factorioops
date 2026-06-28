@@ -26,13 +26,8 @@ pub const MIN_EXPECTED_PASSWORD_VERIFY_TIME: std::time::Duration =
     std::time::Duration::from_millis(650);
 
 pub fn external_password_argon() -> Argon2<'static> {
-    let argon2_params = argon2::Params::new(
-        ARGON2_COST_M_KIB,
-        ARGON2_COST_T,
-        ARGON2_COST_P,
-        None,
-    )
-    .unwrap();
+    let argon2_params =
+        argon2::Params::new(ARGON2_COST_M_KIB, ARGON2_COST_T, ARGON2_COST_P, None).unwrap();
 
     Argon2::new(ARGON2_ALGORITHM, argon2::Version::default(), argon2_params)
 }
@@ -164,8 +159,7 @@ where
 /// meets some basic requirements (which match the way we generate password
 /// hashes).
 fn parse_phc_hash(s: &str) -> Result<PasswordHashString, String> {
-    let hash = PasswordHashString::new(s)
-        .map_err(|e| format!("password hash: {}", e))?;
+    let hash = PasswordHashString::new(s).map_err(|e| format!("password hash: {}", e))?;
     verify_strength(&hash)?;
     Ok(hash)
 }
@@ -238,10 +232,10 @@ mod test {
     use super::ARGON2_COST_T;
     use super::Hasher;
     use super::MAX_PASSWORD_LENGTH;
+    use super::MIN_EXPECTED_PASSWORD_VERIFY_TIME;
     use super::Password;
     use super::PasswordTooLongError;
     use super::external_password_argon;
-    use super::MIN_EXPECTED_PASSWORD_VERIFY_TIME;
     use super::generate_salt_string;
     use super::parse_phc_hash;
     use super::verify_strength;
@@ -326,10 +320,7 @@ mod test {
         );
         assert!(
             !hasher
-                .verify_password(
-                    &Password::new(&"o".repeat(512)).unwrap(),
-                    &hash_str
-                )
+                .verify_password(&Password::new(&"o".repeat(512)).unwrap(), &hash_str)
                 .unwrap()
         );
 
@@ -377,8 +368,7 @@ mod test {
         let known_seed = [0; 32];
         let known_rng = rand::rngs::StdRng::from_seed(known_seed);
         let hash1 = {
-            let mut hasher =
-                Hasher::new(external_password_argon(), known_rng.clone());
+            let mut hasher = Hasher::new(external_password_argon(), known_rng.clone());
             hasher.create_password(&password).unwrap()
         };
         verify_strength(&hash1).unwrap();
@@ -430,10 +420,7 @@ mod test {
 
         let hasher = Hasher::default();
         for t in test_cases {
-            println!(
-                "testing password {:?} with hash {:?}",
-                t.password, t.hash
-            );
+            println!("testing password {:?} with hash {:?}", t.password, t.hash);
             let password = Password::new(t.password).unwrap();
             let hash = PasswordHashString::new(t.hash).unwrap();
             assert!(hasher.verify_password(&password, &hash).unwrap());
@@ -457,11 +444,7 @@ mod test {
         let password_hash_str = hasher.create_password(&password).unwrap();
         verify_strength(&password_hash_str).unwrap();
         assert!(
-            argon2alt::verify_encoded(
-                password_hash_str.as_ref(),
-                PASSWORD_STR.as_bytes()
-            )
-            .unwrap()
+            argon2alt::verify_encoded(password_hash_str.as_ref(), PASSWORD_STR.as_bytes()).unwrap()
         );
 
         // Now, verify that a password hashed with the alternate implementation
@@ -488,8 +471,11 @@ mod test {
         let password_hash = password_hash_str.password_hash();
         let password_bytes = PASSWORD_STR.as_bytes();
         let mut salt_buffer = [0; 32];
-        let salt_bytes =
-            password_hash.salt.unwrap().decode_b64(&mut salt_buffer).unwrap();
+        let salt_bytes = password_hash
+            .salt
+            .unwrap()
+            .decode_b64(&mut salt_buffer)
+            .unwrap();
         let config = argon2alt::Config {
             variant: argon2alt::Variant::Argon2id,
             version: argon2alt::Version::Version13,
@@ -500,9 +486,7 @@ mod test {
             ad: &[],
             hash_length: 32,
         };
-        let alt_hash =
-            argon2alt::hash_encoded(password_bytes, salt_bytes, &config)
-                .unwrap();
+        let alt_hash = argon2alt::hash_encoded(password_bytes, salt_bytes, &config).unwrap();
         assert_eq!(alt_hash, password_hash_str.to_string());
     }
 

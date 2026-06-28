@@ -50,7 +50,7 @@ pub trait UserStore {
                     username: None,
                     email: None,
                 }]),
-                Some(PaginationOptions { limit: Some(1) })
+                Some(PaginationOptions { limit: Some(1) }),
             )
             .await?;
 
@@ -66,7 +66,7 @@ pub trait UserStore {
                     username: Some(vec![username]),
                     email: None,
                 }]),
-                Some(PaginationOptions { limit: Some(1) })
+                Some(PaginationOptions { limit: Some(1) }),
             )
             .await?;
 
@@ -82,7 +82,7 @@ pub trait UserStore {
                     username: None,
                     email: Some(vec![email]),
                 }]),
-                Some(PaginationOptions { limit: Some(1) })
+                Some(PaginationOptions { limit: Some(1) }),
             )
             .await?;
 

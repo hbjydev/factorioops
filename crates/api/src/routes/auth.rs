@@ -7,9 +7,7 @@ use utoipa_axum::{router::OpenApiRouter, routes};
 use crate::AppState;
 
 pub fn router() -> OpenApiRouter<AppState> {
-    OpenApiRouter::new().routes(
-        routes!(login)
-    )
+    OpenApiRouter::new().routes(routes!(login))
 }
 
 #[derive(Deserialize, ToSchema)]
@@ -48,7 +46,10 @@ pub async fn login(
     State(state): State<crate::AppState>,
     req: axum::Json<AuthLoginRequest>,
 ) -> Result<axum::Json<AuthLoginResponse>, axum::http::StatusCode> {
-    let user = state.db.get_user_by_username(req.username.clone()).await
+    let user = state
+        .db
+        .get_user_by_username(req.username.clone())
+        .await
         .map_err(|_| axum::http::StatusCode::INTERNAL_SERVER_ERROR)?;
 
     println!("User: {:?}", user);
